@@ -2,11 +2,11 @@
 (in-package :asdf)
 (defsystem "vivid-diff"
   :version
-  "0.1.0"
+  "1.0.0"
   :depends-on
   (
    "vivid-colors"       ; Colored object printer.
-   "cl-ansi-text"       ; ANSI color escape sequence. Implicitly depends on via vivid-colors.
+   "cl-colors2"         ; Color object, implicitly depends on via vivid-colors.
    "closer-mop"         ; Wrapper for Meta Object Protocols.
    )
   :pathname
