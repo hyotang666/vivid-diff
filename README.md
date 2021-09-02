@@ -6,15 +6,15 @@ Intended to be used in the test frameworks.
 
 ## Alternatives and differences.
 
-| ------ | [cl-difflib] | [clos-diff] | [monkylib-prose-diff] | [diff]     | [diff-match-patch] | vivid-diff      |
-| ------ | ------------ | ----------- | --------------------- | ---------- | ------------------ | --------------- |
-| target | sequence     | clos-object | text-file             | text-file  | sequence           | any lisp object |
-| output | unix-style   | list        | html                  | unix-style | list		| colored         |
-| patch  | *            | *           |                       |            | *                  |                 |
+| ------ | [cl-difflib] | [clos-diff] | [monkeylib-prose-diff] | [diff]     | [diff-match-patch] | vivid-diff      |
+| ------ | ------------ | ----------- | ---------------------- | ---------- | ------------------ | --------------- |
+| target | sequence     | clos-object | text-file              | text-file  | sequence           | any lisp object |
+| output | unix-style   | list        | html                   | unix-style | list		 | colored         |
+| patch  | *            | *           |                        |            | *                  |                 |
 
 [cl-difflib]: https://github.com/wiseman/cl-difflib
 [clos-diff]: https://github.com/krzysz00/clos-diff
-[monlylib-prose-diff]: https://github.com/gigamonkey/monkeylib-prose-diff
+[monkeylylib-prose-diff]: https://github.com/gigamonkey/monkeylib-prose-diff
 [diff]: https://github.com/sharplispers/diff
 [diff-match-patch]: https://github.com/agrostis/diff-match-patch
 
