@@ -96,7 +96,7 @@
                     :version (diff? (pathname-version diff)
                                     (pathname-version origin)))
               out))
-          (vivid-colors:vprint-logical-block (out output :prefix "P")
+          (vivid-colors:vprint-logical-block (out output :prefix "#P")
             (vivid-colors:vprint
               (mismatch-sexp (namestring diff) (namestring origin)) out))))))
 
