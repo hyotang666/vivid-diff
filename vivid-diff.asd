@@ -12,7 +12,12 @@
   :pathname
   "src/"
   :components
-  ((:file "vivid-diff")))
+  ((:file "vivid-diff"))
+  :author "SATO Shinichi"
+  :description "Colored object diff viewer."
+  :license "MIT"
+  :source-control (:git "git@github.com:hyotang666/vivid-diff")
+  :bug-tracker "https://github.com/hyotang666/vivid-diff/issues")
 
 ;;; These forms below are added by JINGOH.GENERATOR.
 ;; Ensure in ASDF for pretty printings.
