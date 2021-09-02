@@ -79,32 +79,26 @@
                    a
                    (etypecase a
                      (symbol (markup a))
-                     (string (markup-string a b)))))
-             (rec (a b &optional acc)
-               (if a
-                   (if b
-                       (rec (cdr a) (cdr b)
-                            (push (diff? (car a) (car b) :test #'equal) acc))
-                       (nreconc acc
-                                (loop :for elt :in a
-                                      :collect (funcall *color-hook*
-                                                        (string elt)))))
-                   (if b
-                       (nreconc acc (funcall *color-hook* ":NULL"))
-                       (nreverse acc)))))
-      (vivid-colors:vprint-logical-block (out output :prefix "#P")
-        (vivid-colors:put
-          (list :host (diff? (pathname-host diff) (pathname-host origin))
-                :device (diff? (pathname-device diff) (pathname-device origin))
-                :directory (rec (pathname-directory diff)
-                                (pathname-directory origin))
-                :name (diff? (pathname-name diff) (pathname-name origin)
-                             :test #'equal)
-                :type (diff? (pathname-type diff) (pathname-type origin)
-                             :test #'equal)
-                :version (diff? (pathname-version diff)
-                                (pathname-version origin)))
-          out)))))
+                     (string (markup-string a b))))))
+      (if (or (not (eq (pathname-host diff) (pathname-host origin)))
+              (not (eq (pathname-version diff) (pathname-version origin))))
+          (vivid-colors:vprint-logical-block (out output :prefix "#P")
+            (vivid-colors:vprint
+              (list :host (diff? (pathname-host diff) (pathname-host origin))
+                    :device (diff? (pathname-device diff)
+                                   (pathname-device origin))
+                    :directory (mismatch-sexp (pathname-directory diff)
+                                              (pathname-directory origin))
+                    :name (diff? (pathname-name diff) (pathname-name origin)
+                                 :test #'equal)
+                    :type (diff? (pathname-type diff) (pathname-type origin)
+                                 :test #'equal)
+                    :version (diff? (pathname-version diff)
+                                    (pathname-version origin)))
+              out))
+          (vivid-colors:vprint-logical-block (out output :prefix "P")
+            (vivid-colors:vprint
+              (mismatch-sexp (namestring diff) (namestring origin)) out))))))
 
 (vivid-colors:set-vprint-dispatch 'pathname-diff 'vprint-pathname-diff)
 
