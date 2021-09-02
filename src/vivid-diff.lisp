@@ -32,7 +32,18 @@
 (defstruct (hash-table-diff (:include diff)
                             (:constructor markup-hash-table (object))))
 
+(defstruct (nothing (:constructor markup-nothing) (:include diff)))
+
 ;;;; VPRINTERS
+
+(defun vprint-nothing (output diff)
+  (declare (ignore diff))
+  (vivid-colors:put :null output
+                    :color cl-colors2:+red+
+                    :args '(:effect :blink))
+  (values))
+
+(vivid-colors:set-vprint-dispatch 'nothing 'vprint-nothing)
 
 (defun vprint-diff (output diff)
   (vivid-colors:put (diff-object diff) output :color cl-colors2:+red+)
@@ -221,22 +232,26 @@
       (markup actual)))
 
 (defmethod mismatch-sexp ((actual vector) (expected vector))
-  (do* ((i 0 (1+ i))
-        (a-p (array-in-bounds-p expected i) (array-in-bounds-p expected i))
-        (b-p (array-in-bounds-p actual i) (array-in-bounds-p actual i))
-        (acc))
-       ((or (and (not a-p) (not b-p)) ; same length
-            (and (not a-p) b-p) ; actual is longer
-            (and a-p (not b-p))) ; actual is shorter
-        (cond
-          ((and (not a-p) (not b-p)) ; same length
-           (coerce (nreverse acc) 'vector))
-          ((and (not a-p) b-p) ; actual is longer
-           (concatenate 'vector (nreverse acc)
-                        (map 'vector #'markup (subseq actual i))))
-          ((and a-p (not b-p)) ; actual is shorter
-           (coerce (nreverse (cons :null acc)) 'vector))))
-    (push (mismatch-sexp (aref actual i) (aref expected i)) acc)))
+  (if (not
+        (eq (car (uiop:ensure-list (type-of actual)))
+            (car (uiop:ensure-list (type-of expected)))))
+      (markup actual)
+      (do* ((i 0 (1+ i))
+            (a-p (array-in-bounds-p expected i) (array-in-bounds-p expected i))
+            (b-p (array-in-bounds-p actual i) (array-in-bounds-p actual i))
+            (acc))
+           ((or (and (not a-p) (not b-p)) ; same length
+                (and (not a-p) b-p) ; actual is longer
+                (and a-p (not b-p))) ; actual is shorter
+            (cond
+              ((and (not a-p) (not b-p)) ; same length
+               (coerce (nreverse acc) 'vector))
+              ((and (not a-p) b-p) ; actual is longer
+               (concatenate 'vector (nreverse acc)
+                            (map 'vector #'markup (subseq actual i))))
+              ((and a-p (not b-p)) ; actual is shorter
+               (coerce (nreverse (cons (markup-nothing) acc)) 'vector))))
+        (push (mismatch-sexp (aref actual i) (aref expected i)) acc))))
 
 (defmethod mismatch-sexp ((actual array) (expected array))
   (if (not (equal (array-dimensions expected) (array-dimensions actual)))
