@@ -152,10 +152,9 @@
                                            cl-colors2:+yellow+))
               (vivid-colors:put-char #\Space out)
               (vivid-colors:vprint-newline :miser out)
-              (vivid-colors:put v out
-                                :color (if (find v '(missing over))
-                                           nil
-                                           cl-colors2:+red+))
+              (if (find v '(missing over))
+                  (vivid-colors:put v out)
+                  (vivid-colors:vprint v out))
               (when rest
                 (vivid-colors:put-char #\Space out)
                 (vivid-colors:vprint-newline :linear out)))))
