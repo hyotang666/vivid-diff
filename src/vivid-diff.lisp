@@ -287,7 +287,7 @@
         (append
           (loop :for ek :being :each :hash-key :of expected :using
                      (:hash-value ev)
-                :for (av exists?) := (gethash ek actual)
+                :for (av exists?) := (multiple-value-list (gethash ek actual))
                 :for diff? = (mismatch-sexp ev av)
                 :if (not exists?)
                   :collect ek
