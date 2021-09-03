@@ -170,9 +170,301 @@
 :values (nil t)
 
 ;;;; Exceptional-Situations:
+;; Numbers
 #?(mismatch-sexp 0 0) => 0
 #?(mismatch-sexp 0 1) :be-the diff
+#?(princ (mismatch-sexp 0 1))
+:outputs #.(let ((cl-ansi-text:*color-mode* :8bit))
+	     (cl-ansi-text:red "0"))
+
+;; Characters
 #?(mismatch-sexp #\a #\b) :be-the diff
 #?(princ (mismatch-sexp #\a #\b))
 :outputs #.(let ((cl-ansi-text:*color-mode* :8bit))
 	     (cl-ansi-text:red (prin1-to-string #\a)))
+
+;; Symbols
+#?(mismatch-sexp t t) => T
+#?(mismatch-sexp t nil) :be-the diff
+#?(princ (mismatch-sexp t nil))
+:outputs #.(let ((cl-ansi-text:*color-mode* :8bit))
+	     (cl-ansi-text:red "T"))
+
+#?(mismatch-sexp :key nil)
+:satisfies (lambda (diff)
+	     (& (typep diff 'diff)
+		(equal (princ-to-string diff)
+		       (let ((cl-ansi-text:*color-mode* :8bit))
+			 (cl-ansi-text:red ":KEY")))))
+
+#?(mismatch-sexp :key '#:uninterned)
+:satisfies (lambda (diff)
+	     (& (typep diff 'diff)
+		(equal (princ-to-string diff)
+		       (let ((cl-ansi-text:*color-mode* :8bit))
+			 (cl-ansi-text:red ":KEY")))))
+
+;; List
+#?(mismatch-sexp '(:a) '(:a)) => (:A)
+,:test equal
+
+#?(mismatch-sexp '(:a) '(:b))
+:satisfies (lambda (diff)
+	     (& (typep diff '(cons diff null))
+		(equal (princ-to-string diff)
+		       (format nil "(~A)"
+			       (let ((cl-ansi-text:*color-mode* :8bit))
+				 (cl-ansi-text:red (prin1-to-string ':a)))))))
+
+; Dot list.
+#?(mismatch-sexp '(a) '(a . b))
+:satisfies (lambda (diff)
+	     (& (typep diff '(cons (eql a) diff))
+		(equal (with-output-to-string (out)
+			 (vivid-colors:vprint diff out))
+		       (format nil "(A . ~A)"
+			       (let ((cl-ansi-text:*color-mode* :8bit))
+				 (cl-ansi-text:red "NIL"))))))
+
+; Lesser
+#?(mismatch-sexp '(a) '(a b))
+:satisfies (lambda (diff)
+	     (& (typep diff '(cons (eql a) diff))
+		(equal (with-output-to-string (out)
+			 (vivid-colors:vprint diff out))
+		       (format nil "(A . ~A)"
+			       (let ((cl-ansi-text:*color-mode* :8bit))
+				 (cl-ansi-text:red "NIL"))))))
+
+; Greater
+#?(mismatch-sexp '(a b) '(a))
+:satisfies (lambda (diff)
+	     (& (typep diff '(cons (eql a) diff))
+		(equal (with-output-to-string (out)
+			 (vivid-colors:vprint diff out))
+		       (format nil "(A . ~A)"
+			       (let ((cl-ansi-text:*color-mode* :8bit))
+				 (cl-ansi-text:red "(B)"))))))
+
+;; String
+#?(mismatch-sexp "a" "a") => "a"
+,:test equal
+
+#?(mismatch-sexp "a" "b")
+:satisfies (lambda (diff)
+	     (& (typep diff 'diff)
+		(equal (with-output-to-string (out)
+			 (vivid-colors:vprint diff out))
+		       (format nil "\"~A\""
+			       (let ((cl-ansi-text:*color-mode* :8bit))
+				 (cl-ansi-text:red "a" :style :background))))))
+
+; Lesser
+#?(mismatch-sexp "a" "ab")
+:satisfies (lambda (diff)
+	     (& (typep diff 'diff)
+		(equal (with-output-to-string (out)
+			 (vivid-colors:vprint diff out))
+		       (format nil "\"a~A\""
+			       (let ((cl-ansi-text:*color-mode* :8bit))
+				 (cl-ansi-text:red ":NULL" :effect :blink))))))
+
+; Greater
+#?(mismatch-sexp "ab" "a")
+:satisfies (lambda (diff)
+	     (& (typep diff 'diff)
+		(equal (with-output-to-string (out)
+			 (vivid-colors:vprint diff out))
+		       (format nil "\"a~A\""
+			       (let ((cl-ansi-text:*color-mode* :8bit))
+				 (cl-ansi-text:red "b" :style :background))))))
+
+;; Pathname
+#?(mismatch-sexp #P"hoge" #P"hoge") => #P"hoge"
+,:test equal
+
+#?(mismatch-sexp #P"hoge" #P"fuga")
+:satisfies (lambda (diff)
+	     (& (typep diff 'diff)
+		(equal (with-output-to-string (out)
+			 (vivid-colors:vprint diff out))
+		       (format nil "#P\"~A\""
+			       (let ((cl-ansi-text:*color-mode* :8bit))
+				 (cl-ansi-text:red "hoge" :style :background))))))
+
+;; Bit-vector
+#?(mismatch-sexp #*1101 #*1101) => #*1101
+,:test equal
+
+#?(mismatch-sexp #*1101 #*1111)
+:satisfies (lambda (diff)
+	     (& (typep diff 'diff)
+		(equal (with-output-to-string (out)
+			 (vivid-colors:vprint diff out))
+		       (let ((cl-ansi-text:*color-mode* :8bit))
+			 (cl-ansi-text:red "#*1101")))))
+
+;; Vector
+#?(mismatch-sexp #() #()) => #()
+,:test equalp
+
+; type mismatch.
+#?(mismatch-sexp "a" #(#\a))
+:satisfies (lambda (diff)
+	     (& (typep diff 'diff)
+		(equal (with-output-to-string (out)
+			 (vivid-colors:vprint diff out))
+		       (let ((cl-ansi-text:*color-mode* :8bit))
+			 (cl-ansi-text:red "\"a\"")))))
+
+; element mismatch.
+#?(mismatch-sexp #(hoge) #(#\a))
+:satisfies (lambda (diff)
+	     (& (typep diff '(vector t *))
+		(equal (with-output-to-string (out)
+			 (vivid-colors:vprint diff out))
+		       (format nil "#(~A)"
+			       (let ((cl-ansi-text:*color-mode* :8bit))
+				 (cl-ansi-text:red "HOGE"))))))
+
+; Lesser
+#?(mismatch-sexp #(a) #(a b))
+:satisfies (lambda (diff)
+	     (& (typep diff '(vector t *))
+		(equal (with-output-to-string (out)
+			 (vivid-colors:vprint diff out))
+		       (format nil "#(A ~A)"
+			       (let ((cl-ansi-text:*color-mode* :8bit))
+				 (cl-ansi-text:red ":NULL" :effect :blink))))))
+
+; Greater
+#?(mismatch-sexp #(a b) #(a))
+:satisfies (lambda (diff)
+	     (& (typep diff '(vector t *))
+		(equal (with-output-to-string (out)
+			 (vivid-colors:vprint diff out))
+		       (format nil "#(A ~A)"
+			       (let ((cl-ansi-text:*color-mode* :8bit))
+				 (cl-ansi-text:red "B"))))))
+
+;; Array
+#?(mismatch-sexp #0A() #0A()) => #0A()
+,:test equalp
+
+; dimension mismatch
+#?(mismatch-sexp #0A() #1A())
+:satisfies (lambda (diff)
+	     (& (typep diff 'diff)
+		(equal (with-output-to-string (out)
+			 (vivid-colors:vprint diff out))
+		       (let ((cl-ansi-text:*color-mode* :8bit))
+			 (cl-ansi-text:red "(:DIFFERENT-DIMENSIONS :EXPECTED (0) :ACTUAL NIL #0ANIL)")))))
+
+; Lesser
+#?(mismatch-sexp #2A((a b)) #2A((a b) (c d)))
+:satisfies (lambda (diff)
+	     (& (typep diff 'diff)
+		(equal (with-output-to-string (out)
+			 (vivid-colors:vprint diff out))
+		       (let ((cl-ansi-text:*color-mode* :8bit))
+			 (cl-ansi-text:red "(:DIFFERENT-DIMENSIONS :EXPECTED (2 2) :ACTUAL (1 2) #2A((A B)))")))))
+
+#?(mismatch-sexp #2A((a b)) #2A((a c)))
+:satisfies (lambda (diff)
+	     (& (typep diff 'array)
+		(equal (with-output-to-string (out)
+			 (vivid-colors:vprint diff out))
+		       (format nil "#2A((A ~A))"
+			       (let ((cl-ansi-text:*color-mode* :8bit))
+				 (cl-ansi-text:red "B"))))))
+
+;; Strucuture
+
+#?(mismatch-sexp cl-colors2:+red+ cl-colors2:+red+)
+=> #.cl-colors2:+red+
+,:test equalp
+
+#?(mismatch-sexp cl-colors2:+red+ cl-colors2:+blue+)
+:satisfies (lambda (diff)
+	     (& (typep diff 'diff)
+		(equal (with-output-to-string (out)
+			 (vivid-colors:vprint diff out))
+		       (format nil "#S(CL-COLORS2:RGB :RED ~A :GREEN 0 :BLUE ~A)"
+			       (let ((cl-ansi-text:*color-mode* :8bit))
+				 (cl-ansi-text:red "1"))
+			       (let ((cl-ansi-text:*color-mode* :8bit))
+				 (cl-ansi-text:red "0"))))))
+
+;; Standard-object
+
+#?(defclass test () ((slot :initarg :slot))) :be-the standard-class
+
+#?(mismatch-sexp (make-instance 'test :slot :a) (make-instance 'test :slot :a))
+:satisfies (lambda (result)
+	     (& (typep result 'test)
+		(equal :a (slot-value result 'slot))))
+
+; Not bound.
+#?(mismatch-sexp (make-instance 'test) (make-instance 'test :slot :a))
+:satisfies (lambda (diff)
+	     (& (typep diff 'diff)
+		(equal (with-output-to-string (out)
+			 (vivid-colors:vprint diff out))
+		       (format nil "#<TEST :SLOT ~A>"
+			       (let ((cl-ansi-text:*color-mode* :8bit))
+				 (cl-ansi-text:red ":UNBOUND" :effect :blink))))))
+
+; Should be unbound.
+#?(mismatch-sexp (make-instance 'test :slot :a) (make-instance 'test))
+:satisfies (lambda (diff)
+	     (& (typep diff 'diff)
+		(equal (with-output-to-string (out)
+			 (vivid-colors:vprint diff out))
+		       (format nil "#<TEST :SLOT ~A>"
+			       (let ((cl-ansi-text:*color-mode* :8bit))
+				 (cl-ansi-text:red ":A"))))))
+
+; Mismatch value.
+#?(mismatch-sexp (make-instance 'test :slot :a) (make-instance 'test :slot :b))
+:satisfies (lambda (diff)
+	     (& (typep diff 'diff)
+		(equal (with-output-to-string (out)
+			 (vivid-colors:vprint diff out))
+		       (format nil "#<TEST :SLOT ~A>"
+			       (let ((cl-ansi-text:*color-mode* :8bit))
+				 (cl-ansi-text:red ":A"))))))
+
+;; Hash-table
+#?(mismatch-sexp (make-hash-table) (make-hash-table)) => #.(make-hash-table)
+,:test equalp
+
+; Lesser
+#?(mismatch-sexp (make-hash-table) (alexandria:plist-hash-table '(:a :b)))
+:satisfies (lambda (diff)
+	     (& (typep diff 'diff)
+		(equal (with-output-to-string (out)
+			 (vivid-colors:vprint diff out))
+		       (format nil "#<HASH-TABLE :A ~A>"
+			       (let ((cl-ansi-text:*color-mode* :8bit))
+				 (cl-ansi-text:red ":MISSING" :effect :blink))))))
+
+; Greater
+#?(mismatch-sexp (alexandria:plist-hash-table '(:a :b)) (make-hash-table))
+:satisfies (lambda (diff)
+	     (& (typep diff 'diff)
+		(equal (with-output-to-string (out)
+			 (vivid-colors:vprint diff out))
+		       (format nil "#<HASH-TABLE :A ~A>"
+			       (let ((cl-ansi-text:*color-mode* :8bit))
+				 (cl-ansi-text:red ":B"))))))
+
+; Mismatch value.
+#?(mismatch-sexp (alexandria:plist-hash-table '(:a :b)) (alexandria:plist-hash-table '(:a "b")))
+:satisfies (lambda (diff)
+	     (& (typep diff 'diff)
+		(equal (with-output-to-string (out)
+			 (vivid-colors:vprint diff out))
+		       (format nil "#<HASH-TABLE :A ~A>"
+			       (let ((cl-ansi-text:*color-mode* :8bit))
+				 (cl-ansi-text:red ":B"))))))
+
