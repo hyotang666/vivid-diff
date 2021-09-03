@@ -298,7 +298,7 @@
           (loop :for ek :being :each :hash-key :of expected :using
                      (:hash-value ev)
                 :for (av exists?) := (multiple-value-list (gethash ek actual))
-                :for diff? = (mismatch-sexp ev av)
+                :for diff? = (mismatch-sexp av ev)
                 :if (not exists?)
                   :collect ek
                   :and :collect (markup-nothing :missing)
@@ -306,7 +306,7 @@
                   :collect ek
                   :and :collect diff?)
           (loop :for ak :being :each :hash-key :of actual
-                :for exist? = (gethash ak expected)
+                :for exist? = (nth-value 1 (gethash ak expected))
                 :if (not exist?)
                   :collect ak
-                  :and :collect 'over)))))
+                  :and :collect (markup (gethash ak actual)))))))
