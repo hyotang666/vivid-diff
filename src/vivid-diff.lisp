@@ -129,9 +129,7 @@
     (vivid-colors:vprint-newline :miser out)
     (loop :for (slot . rest) :on (slots<=obj (object-diff-origin diff))
           :for actual :in (object-diff-object diff)
-          :do (vivid-colors:put slot out
-                                :color cl-colors2:+yellow+
-                                :key (lambda (n) (format nil ":~S" n)))
+          :do (vivid-colors:put slot out :key (lambda (n) (format nil ":~A" n)))
               (vivid-colors:put-char #\Space out)
               (vivid-colors:vprint-newline :miser out)
               (if (typep actual 'diff)
@@ -150,15 +148,10 @@
     (vivid-colors:vprint-indent :current 0 out)
     (vivid-colors:vprint-newline :miser out)
     (loop :for (k v . rest) :on (diff-object diff) :by #'cddr
-          :do (vivid-colors:put k out
-                                :color (if (find v '(missing over))
-                                           cl-colors2:+red+
-                                           cl-colors2:+yellow+))
+          :do (vivid-colors:put k out)
               (vivid-colors:put-char #\Space out)
               (vivid-colors:vprint-newline :miser out)
-              (if (find v '(missing over))
-                  (vivid-colors:put v out)
-                  (vivid-colors:vprint v out))
+              (vivid-colors:vprint v out)
               (when rest
                 (vivid-colors:put-char #\Space out)
                 (vivid-colors:vprint-newline :linear out)))))
