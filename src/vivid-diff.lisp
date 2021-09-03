@@ -274,12 +274,21 @@
 (defmethod mismatch-sexp ((actual standard-object) (expected standard-object))
   (if (not (eq (type-of expected) (type-of actual)))
       (markup actual)
-      (loop :for slot1 :in (slots<=obj expected)
-            :for slot2 :in (slots<=obj actual)
-            :collect (mismatch-sexp (slot-value actual slot2)
-                                    (slot-value expected slot1))
-              :into diffs
-            :finally (return (markup-object diffs expected)))))
+      (loop :for slot :in (slots<=obj expected)
+            :if (slot-boundp expected slot)
+              :if (slot-boundp actual slot)
+                :collect (mismatch-sexp (slot-value actual slot)
+                                        (slot-value expected slot))
+                  :into diffs
+              :else
+                :collect (markup-nothing :unbound) :into diffs
+              :end
+            :else :if (slot-boundp actual slot)
+              :collect (markup (slot-value actual slot)) :into diffs
+            :finally (return
+                      (if (find-if (lambda (x) (typep x 'diff)) diffs)
+                          (markup-object diffs expected)
+                          actual)))))
 
 (defmethod mismatch-sexp ((actual hash-table) (expected hash-table))
   (if (equalp actual expected)
