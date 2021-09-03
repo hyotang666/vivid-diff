@@ -32,13 +32,12 @@
 (defstruct (hash-table-diff (:include diff)
                             (:constructor markup-hash-table (object))))
 
-(defstruct (nothing (:constructor markup-nothing) (:include diff)))
+(defstruct (nothing (:constructor markup-nothing (object)) (:include diff)))
 
 ;;;; VPRINTERS
 
 (defun vprint-nothing (output diff)
-  (declare (ignore diff))
-  (vivid-colors:put :null output
+  (vivid-colors:put (diff-object diff) output
                     :color cl-colors2:+red+
                     :args '(:effect :blink))
   (values))
@@ -250,7 +249,7 @@
                (concatenate 'vector (nreverse acc)
                             (map 'vector #'markup (subseq actual i))))
               ((and a-p (not b-p)) ; actual is shorter
-               (coerce (nreverse (cons (markup-nothing) acc)) 'vector))))
+               (coerce (nreverse (cons (markup-nothing :null) acc)) 'vector))))
         (push (mismatch-sexp (aref actual i) (aref expected i)) acc))))
 
 (defmethod mismatch-sexp ((actual array) (expected array))
@@ -300,7 +299,7 @@
                 :for diff? = (mismatch-sexp ev av)
                 :if (not exists?)
                   :collect ek
-                  :and :collect 'missing
+                  :and :collect (markup-nothing :missing)
                 :else :if (typep diff? 'diff)
                   :collect ek
                   :and :collect diff?)
