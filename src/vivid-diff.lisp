@@ -156,6 +156,11 @@
   (:set 'diff 'vprint-diff)
   (:set 'nothing 'vprint-nothing))
 
+(defun diff-print (mismatched)
+  (let ((vivid-colors:*vprint-dispatch*
+         (vivid-colors:find-vprint-dispatch :vivid-diff)))
+    (vivid-colors:vprint mismatched)))
+
 ;;;; MISMATCH-SEXP
 
 (defvar *env* nil)
