@@ -42,13 +42,9 @@
                     :args '(:effect :blink))
   (values))
 
-(vivid-colors:set-vprint-dispatch 'nothing 'vprint-nothing)
-
 (defun vprint-diff (output diff)
   (vivid-colors:put (diff-object diff) output :color cl-colors2:+red+)
   (values))
-
-(vivid-colors:set-vprint-dispatch 'diff 'vprint-diff)
 
 (defmethod print-object ((object diff) output)
   (cond ((or *print-readably* *print-escape*) (call-next-method))
@@ -80,8 +76,6 @@
             (vivid-colors:put (string-diff-object diff) output
                               :color cl-colors2:+red+)))))
 
-(vivid-colors:set-vprint-dispatch 'string-diff 'vprint-string-diff)
-
 (defun vprint-pathname-diff (output diff)
   (let ((diff (pathname-diff-object diff)) (origin (pathname-diff-origin diff)))
     (labels ((diff? (a b &key (test #'eql) &aux (test (coerce test 'function)))
@@ -109,8 +103,6 @@
           (vivid-colors:vprint-logical-block (output nil :prefix "#P")
             (vivid-colors:vprint
               (mismatch-sexp (namestring diff) (namestring origin)) output))))))
-
-(vivid-colors:set-vprint-dispatch 'pathname-diff 'vprint-pathname-diff)
 
 (defun vprint-object-diff (output diff)
   (vivid-colors:vprint-logical-block (output nil :prefix
@@ -140,8 +132,6 @@
                 (vivid-colors:put-char #\Space output)
                 (vivid-colors:vprint-newline :linear output)))))
 
-(vivid-colors:set-vprint-dispatch 'object-diff 'vprint-object-diff)
-
 (defun vprint-hash-table-diff (output diff)
   (vivid-colors:vprint-logical-block (output nil :prefix "#<" :suffix ">")
     (vivid-colors:put 'hash-table output)
@@ -157,7 +147,14 @@
                 (vivid-colors:put-char #\Space output)
                 (vivid-colors:vprint-newline :linear output)))))
 
-(vivid-colors:set-vprint-dispatch 'hash-table-diff 'vprint-hash-table-diff)
+(vivid-colors:define-vprint-dispatch :vivid-diff
+  (:merge :pretty)
+  (:set 'hash-table-diff 'vprint-hash-table-diff)
+  (:set 'object-diff 'vprint-object-diff)
+  (:set 'pathname-diff 'vprint-pathname-diff)
+  (:set 'string-diff 'vprint-string-diff)
+  (:set 'diff 'vprint-diff)
+  (:set 'nothing 'vprint-nothing))
 
 ;;;; MISMATCH-SEXP
 
