@@ -3,13 +3,16 @@
 (defpackage :vivid-diff
   (:use :cl)
   (:export ;;;; MAIN API
-           "MISMATCH-SEXP")
+           "MISMATCH-SEXP"
+           "DIFF-PRINT")
   (:export ;;;; For hackers to extend.
            "DIFF" ; structure name
            "MARKUP" ; constructor
            "DIFF-OBJECT" ; accessor
            "DIFF-COMPARABLE" ; structure name
            "DIFF-COMPARABLE-ORIGIN" ; accessor
+           "NOTHING" ; structure name.
+           "MARKUP-NOTHING" ; constructor.
            ))
 
 (in-package :vivid-diff)
