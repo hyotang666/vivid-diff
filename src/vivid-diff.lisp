@@ -119,8 +119,7 @@
                                           ">"))
     (vivid-colors:put (type-of (object-diff-origin diff)) output :color nil)
     (write-char #\Space output)
-    (vivid-colors:vprint-indent :current 0 output)
-    (vivid-colors:vprint-newline :miser output)
+    (vivid-colors:vprint-newline :linear output)
     (loop :for (slot . rest) :on (slots<=obj (object-diff-origin diff))
           :for actual :in (object-diff-object diff)
           :do (vivid-colors:put slot output
