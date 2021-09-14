@@ -2,7 +2,7 @@
 (in-package :asdf)
 (defsystem "vivid-diff"
   :version
-  "2.0.0"
+  "2.0.1"
   :depends-on
   (
    "vivid-colors"       ; Colored object printer.

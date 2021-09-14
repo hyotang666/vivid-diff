@@ -38,8 +38,10 @@
 
 ;;;; Notes:
 ; When *PRINT-READABLY* and *PRINT-ESCAPSE* is NIL and VIVID-COLORS:*PRINT-VIVID* is T,
+; and VIVID-COLORS:*VPRINT-DISPATCH* bound by :vivid-diff dispatch-table,
 ; Colored notation is printed.
-#?(let ((vivid-colors:*print-vivid* t))
+#?(let ((vivid-colors:*print-vivid* t)
+	(vivid-colors:*vprint-dispatch* (vivid-colors:find-vprint-dispatch :vivid-diff)))
     (write (markup 0) :readably nil :escape nil))
 :outputs #.(let ((cl-ansi-text:*color-mode* :8bit))
 	     (cl-ansi-text:red "0"))
@@ -173,34 +175,34 @@
 ;; Numbers
 #?(mismatch-sexp 0 0) => 0
 #?(mismatch-sexp 0 1) :be-the diff
-#?(princ (mismatch-sexp 0 1))
+#?(diff-print (mismatch-sexp 0 1))
 :outputs #.(let ((cl-ansi-text:*color-mode* :8bit))
 	     (cl-ansi-text:red "0"))
 
 ;; Characters
 #?(mismatch-sexp #\a #\b) :be-the diff
-#?(princ (mismatch-sexp #\a #\b))
+#?(diff-print (mismatch-sexp #\a #\b))
 :outputs #.(let ((cl-ansi-text:*color-mode* :8bit))
 	     (cl-ansi-text:red (prin1-to-string #\a)))
 
 ;; Symbols
 #?(mismatch-sexp t t) => T
 #?(mismatch-sexp t nil) :be-the diff
-#?(princ (mismatch-sexp t nil))
+#?(diff-print (mismatch-sexp t nil))
 :outputs #.(let ((cl-ansi-text:*color-mode* :8bit))
 	     (cl-ansi-text:red "T"))
 
 #?(mismatch-sexp :key nil)
 :satisfies (lambda (diff)
 	     (& (typep diff 'diff)
-		(equal (princ-to-string diff)
+		(equal (with-output-to-string (out) (diff-print diff out))
 		       (let ((cl-ansi-text:*color-mode* :8bit))
 			 (cl-ansi-text:red ":KEY")))))
 
 #?(mismatch-sexp :key '#:uninterned)
 :satisfies (lambda (diff)
 	     (& (typep diff 'diff)
-		(equal (princ-to-string diff)
+		(equal (with-output-to-string (out) (diff-print diff out))
 		       (let ((cl-ansi-text:*color-mode* :8bit))
 			 (cl-ansi-text:red ":KEY")))))
 
@@ -211,7 +213,7 @@
 #?(mismatch-sexp '(:a) '(:b))
 :satisfies (lambda (diff)
 	     (& (typep diff '(cons diff null))
-		(equal (princ-to-string diff)
+		(equal (with-output-to-string (out) (diff-print diff out))
 		       (format nil "(~A)"
 			       (let ((cl-ansi-text:*color-mode* :8bit))
 				 (cl-ansi-text:red (prin1-to-string ':a)))))))
@@ -220,8 +222,7 @@
 #?(mismatch-sexp '(a) '(a . b))
 :satisfies (lambda (diff)
 	     (& (typep diff '(cons (eql a) diff))
-		(equal (with-output-to-string (out)
-			 (vivid-colors:vprint diff out))
+		(equal (with-output-to-string (out) (diff-print diff out))
 		       (format nil "(A . ~A)"
 			       (let ((cl-ansi-text:*color-mode* :8bit))
 				 (cl-ansi-text:red "NIL"))))))
@@ -230,8 +231,7 @@
 #?(mismatch-sexp '(a) '(a b))
 :satisfies (lambda (diff)
 	     (& (typep diff '(cons (eql a) diff))
-		(equal (with-output-to-string (out)
-			 (vivid-colors:vprint diff out))
+		(equal (with-output-to-string (out) (diff-print diff out))
 		       (format nil "(A . ~A)"
 			       (let ((cl-ansi-text:*color-mode* :8bit))
 				 (cl-ansi-text:red "NIL"))))))
@@ -240,8 +240,7 @@
 #?(mismatch-sexp '(a b) '(a))
 :satisfies (lambda (diff)
 	     (& (typep diff '(cons (eql a) diff))
-		(equal (with-output-to-string (out)
-			 (vivid-colors:vprint diff out))
+		(equal (with-output-to-string (out) (diff-print diff out))
 		       (format nil "(A . ~A)"
 			       (let ((cl-ansi-text:*color-mode* :8bit))
 				 (cl-ansi-text:red "(B)"))))))
@@ -253,31 +252,25 @@
 #?(mismatch-sexp "a" "b")
 :satisfies (lambda (diff)
 	     (& (typep diff 'diff)
-		(equal (with-output-to-string (out)
-			 (vivid-colors:vprint diff out))
+		(equal (with-output-to-string (out) (diff-print diff out))
 		       (format nil "\"~A\""
-			       (let ((cl-ansi-text:*color-mode* :8bit))
-				 (cl-ansi-text:red "a" :style :background))))))
+			       (cl-ansi-text:red "a" :style :background)))))
 
 ; Lesser
 #?(mismatch-sexp "a" "ab")
 :satisfies (lambda (diff)
 	     (& (typep diff 'diff)
-		(equal (with-output-to-string (out)
-			 (vivid-colors:vprint diff out))
+		(equal (with-output-to-string (out) (diff-print diff out))
 		       (format nil "\"a~A\""
-			       (let ((cl-ansi-text:*color-mode* :8bit))
-				 (cl-ansi-text:red ":NULL" :effect :blink))))))
+			       (cl-ansi-text:red ":NULL" :effect :blink)))))
 
 ; Greater
 #?(mismatch-sexp "ab" "a")
 :satisfies (lambda (diff)
 	     (& (typep diff 'diff)
-		(equal (with-output-to-string (out)
-			 (vivid-colors:vprint diff out))
+		(equal (with-output-to-string (out) (diff-print diff out))
 		       (format nil "\"a~A\""
-			       (let ((cl-ansi-text:*color-mode* :8bit))
-				 (cl-ansi-text:red "b" :style :background))))))
+			       (cl-ansi-text:red "b" :style :background)))))
 
 ;; Pathname
 #?(mismatch-sexp #P"hoge" #P"hoge") => #P"hoge"
@@ -286,11 +279,9 @@
 #?(mismatch-sexp #P"hoge" #P"fuga")
 :satisfies (lambda (diff)
 	     (& (typep diff 'diff)
-		(equal (with-output-to-string (out)
-			 (vivid-colors:vprint diff out))
+		(equal (with-output-to-string (out) (diff-print diff out))
 		       (format nil "#P\"~A\""
-			       (let ((cl-ansi-text:*color-mode* :8bit))
-				 (cl-ansi-text:red "hoge" :style :background))))))
+			       (cl-ansi-text:red "hoge" :style :background)))))
 
 ;; Bit-vector
 #?(mismatch-sexp #*1101 #*1101) => #*1101
@@ -299,8 +290,7 @@
 #?(mismatch-sexp #*1101 #*1111)
 :satisfies (lambda (diff)
 	     (& (typep diff 'diff)
-		(equal (with-output-to-string (out)
-			 (vivid-colors:vprint diff out))
+		(equal (with-output-to-string (out) (diff-print diff out))
 		       (let ((cl-ansi-text:*color-mode* :8bit))
 			 (cl-ansi-text:red "#*1101")))))
 
@@ -312,8 +302,7 @@
 #?(mismatch-sexp "a" #(#\a))
 :satisfies (lambda (diff)
 	     (& (typep diff 'diff)
-		(equal (with-output-to-string (out)
-			 (vivid-colors:vprint diff out))
+		(equal (with-output-to-string (out) (diff-print diff out))
 		       (let ((cl-ansi-text:*color-mode* :8bit))
 			 (cl-ansi-text:red "\"a\"")))))
 
@@ -321,8 +310,7 @@
 #?(mismatch-sexp #(hoge) #(#\a))
 :satisfies (lambda (diff)
 	     (& (typep diff '(vector t *))
-		(equal (with-output-to-string (out)
-			 (vivid-colors:vprint diff out))
+		(equal (with-output-to-string (out) (diff-print diff out))
 		       (format nil "#(~A)"
 			       (let ((cl-ansi-text:*color-mode* :8bit))
 				 (cl-ansi-text:red "HOGE"))))))
@@ -331,8 +319,7 @@
 #?(mismatch-sexp #(a) #(a b))
 :satisfies (lambda (diff)
 	     (& (typep diff '(vector t *))
-		(equal (with-output-to-string (out)
-			 (vivid-colors:vprint diff out))
+		(equal (with-output-to-string (out) (diff-print diff out))
 		       (format nil "#(A ~A)"
 			       (let ((cl-ansi-text:*color-mode* :8bit))
 				 (cl-ansi-text:red ":NULL" :effect :blink))))))
@@ -341,8 +328,7 @@
 #?(mismatch-sexp #(a b) #(a))
 :satisfies (lambda (diff)
 	     (& (typep diff '(vector t *))
-		(equal (with-output-to-string (out)
-			 (vivid-colors:vprint diff out))
+		(equal (with-output-to-string (out) (diff-print diff out))
 		       (format nil "#(A ~A)"
 			       (let ((cl-ansi-text:*color-mode* :8bit))
 				 (cl-ansi-text:red "B"))))))
@@ -355,8 +341,7 @@
 #?(mismatch-sexp #0A() #1A())
 :satisfies (lambda (diff)
 	     (& (typep diff 'diff)
-		(equal (with-output-to-string (out)
-			 (vivid-colors:vprint diff out))
+		(equal (with-output-to-string (out) (diff-print diff out))
 		       (let ((cl-ansi-text:*color-mode* :8bit))
 			 (cl-ansi-text:red "(:DIFFERENT-DIMENSIONS :EXPECTED (0) :ACTUAL NIL #0ANIL)")))))
 
@@ -364,16 +349,14 @@
 #?(mismatch-sexp #2A((a b)) #2A((a b) (c d)))
 :satisfies (lambda (diff)
 	     (& (typep diff 'diff)
-		(equal (with-output-to-string (out)
-			 (vivid-colors:vprint diff out))
+		(equal (with-output-to-string (out) (diff-print diff out))
 		       (let ((cl-ansi-text:*color-mode* :8bit))
 			 (cl-ansi-text:red "(:DIFFERENT-DIMENSIONS :EXPECTED (2 2) :ACTUAL (1 2) #2A((A B)))")))))
 
 #?(mismatch-sexp #2A((a b)) #2A((a c)))
 :satisfies (lambda (diff)
 	     (& (typep diff 'array)
-		(equal (with-output-to-string (out)
-			 (vivid-colors:vprint diff out))
+		(equal (with-output-to-string (out) (diff-print diff out))
 		       (format nil "#2A((A ~A))"
 			       (let ((cl-ansi-text:*color-mode* :8bit))
 				 (cl-ansi-text:red "B"))))))
@@ -387,8 +370,7 @@
 #?(mismatch-sexp cl-colors2:+red+ cl-colors2:+blue+)
 :satisfies (lambda (diff)
 	     (& (typep diff 'diff)
-		(equal (with-output-to-string (out)
-			 (vivid-colors:vprint diff out))
+		(equal (with-output-to-string (out) (diff-print diff out))
 		       (format nil "#S(CL-COLORS2:RGB :RED ~A :GREEN 0 :BLUE ~A)"
 			       (let ((cl-ansi-text:*color-mode* :8bit))
 				 (cl-ansi-text:red "1"))
@@ -408,8 +390,7 @@
 #?(mismatch-sexp (make-instance 'test) (make-instance 'test :slot :a))
 :satisfies (lambda (diff)
 	     (& (typep diff 'diff)
-		(equal (with-output-to-string (out)
-			 (vivid-colors:vprint diff out))
+		(equal (with-output-to-string (out) (diff-print diff out))
 		       (format nil "#<TEST :SLOT ~A>"
 			       (let ((cl-ansi-text:*color-mode* :8bit))
 				 (cl-ansi-text:red ":UNBOUND" :effect :blink))))))
@@ -418,8 +399,7 @@
 #?(mismatch-sexp (make-instance 'test :slot :a) (make-instance 'test))
 :satisfies (lambda (diff)
 	     (& (typep diff 'diff)
-		(equal (with-output-to-string (out)
-			 (vivid-colors:vprint diff out))
+		(equal (with-output-to-string (out) (diff-print diff out))
 		       (format nil "#<TEST :SLOT ~A>"
 			       (let ((cl-ansi-text:*color-mode* :8bit))
 				 (cl-ansi-text:red ":A"))))))
@@ -428,8 +408,7 @@
 #?(mismatch-sexp (make-instance 'test :slot :a) (make-instance 'test :slot :b))
 :satisfies (lambda (diff)
 	     (& (typep diff 'diff)
-		(equal (with-output-to-string (out)
-			 (vivid-colors:vprint diff out))
+		(equal (with-output-to-string (out) (diff-print diff out))
 		       (format nil "#<TEST :SLOT ~A>"
 			       (let ((cl-ansi-text:*color-mode* :8bit))
 				 (cl-ansi-text:red ":A"))))))
@@ -442,8 +421,7 @@
 #?(mismatch-sexp (make-hash-table) (alexandria:plist-hash-table '(:a :b)))
 :satisfies (lambda (diff)
 	     (& (typep diff 'diff)
-		(equal (with-output-to-string (out)
-			 (vivid-colors:vprint diff out))
+		(equal (with-output-to-string (out) (diff-print diff out))
 		       (format nil "#<HASH-TABLE :A ~A>"
 			       (let ((cl-ansi-text:*color-mode* :8bit))
 				 (cl-ansi-text:red ":MISSING" :effect :blink))))))
@@ -452,8 +430,7 @@
 #?(mismatch-sexp (alexandria:plist-hash-table '(:a :b)) (make-hash-table))
 :satisfies (lambda (diff)
 	     (& (typep diff 'diff)
-		(equal (with-output-to-string (out)
-			 (vivid-colors:vprint diff out))
+		(equal (with-output-to-string (out) (diff-print diff out))
 		       (format nil "#<HASH-TABLE :A ~A>"
 			       (let ((cl-ansi-text:*color-mode* :8bit))
 				 (cl-ansi-text:red ":B"))))))
@@ -462,8 +439,7 @@
 #?(mismatch-sexp (alexandria:plist-hash-table '(:a :b)) (alexandria:plist-hash-table '(:a "b")))
 :satisfies (lambda (diff)
 	     (& (typep diff 'diff)
-		(equal (with-output-to-string (out)
-			 (vivid-colors:vprint diff out))
+		(equal (with-output-to-string (out) (diff-print diff out))
 		       (format nil "#<HASH-TABLE :A ~A>"
 			       (let ((cl-ansi-text:*color-mode* :8bit))
 				 (cl-ansi-text:red ":B"))))))

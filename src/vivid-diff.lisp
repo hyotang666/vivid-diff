@@ -41,8 +41,7 @@
 
 (defun vprint-nothing (output diff)
   (vivid-colors:put (diff-object diff) output
-                    :color cl-colors2:+red+
-                    :args '(:effect :blink))
+                    :color (list cl-colors2:+red+ :effect :blink))
   (values))
 
 (defun vprint-diff (output diff)
@@ -119,35 +118,35 @@
                                           ")"
                                           ">"))
     (vivid-colors:put (type-of (object-diff-origin diff)) output :color nil)
-    (vivid-colors:put-char #\Space output)
+    (write-char #\Space output)
     (vivid-colors:vprint-indent :current 0 output)
     (vivid-colors:vprint-newline :miser output)
     (loop :for (slot . rest) :on (slots<=obj (object-diff-origin diff))
           :for actual :in (object-diff-object diff)
           :do (vivid-colors:put slot output
                                 :key (lambda (n) (format nil ":~A" n)))
-              (vivid-colors:put-char #\Space output)
+              (write-char #\Space output)
               (vivid-colors:vprint-newline :miser output)
               (if (typep actual 'diff)
                   (vivid-colors:vprint actual output t)
                   (vivid-colors:put actual output))
               (when rest
-                (vivid-colors:put-char #\Space output)
+                (write-char #\Space output)
                 (vivid-colors:vprint-newline :linear output)))))
 
 (defun vprint-hash-table-diff (output diff)
   (vivid-colors:vprint-logical-block (output nil :prefix "#<" :suffix ">")
     (vivid-colors:put 'hash-table output)
-    (vivid-colors:put-char #\Space output)
+    (write-char #\Space output)
     (vivid-colors:vprint-indent :current 0 output)
     (vivid-colors:vprint-newline :miser output)
     (loop :for (k v . rest) :on (diff-object diff) :by #'cddr
           :do (vivid-colors:put k output)
-              (vivid-colors:put-char #\Space output)
+              (write-char #\Space output)
               (vivid-colors:vprint-newline :miser output)
               (vivid-colors:vprint v output)
               (when rest
-                (vivid-colors:put-char #\Space output)
+                (write-char #\Space output)
                 (vivid-colors:vprint-newline :linear output)))))
 
 (vivid-colors:define-vprint-dispatch :vivid-diff
@@ -159,10 +158,10 @@
   (:set 'diff 'vprint-diff)
   (:set 'nothing 'vprint-nothing))
 
-(defun diff-print (mismatched)
+(defun diff-print (mismatched &optional (output *standard-output*))
   (let ((vivid-colors:*vprint-dispatch*
          (vivid-colors:find-vprint-dispatch :vivid-diff)))
-    (vivid-colors:vprint mismatched)))
+    (vivid-colors:vprint mismatched output)))
 
 ;;;; MISMATCH-SEXP
 
