@@ -118,7 +118,7 @@
                                                  'structure-object)
                                           ")"
                                           ">"))
-    (vivid-colors:put (type-of (object-diff-origin diff)) output :color nil)
+    (vivid-colors:vprint (type-of (object-diff-origin diff)) output)
     (write-char #\Space output)
     (vivid-colors:vprint-newline :linear output)
     (loop :for (slot . rest) :on (slots<=obj (object-diff-origin diff))
@@ -127,9 +127,7 @@
                                 :key (lambda (n) (format nil ":~A" n)))
               (write-char #\Space output)
               (vivid-colors:vprint-newline :miser output)
-              (if (typep actual 'diff)
-                  (vivid-colors:vprint actual output t)
-                  (vivid-colors:put actual output))
+	      (vivid-colors:vprint actual output t)
               (when rest
                 (write-char #\Space output)
                 (vivid-colors:vprint-newline :linear output)))))
