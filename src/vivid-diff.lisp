@@ -3,16 +3,16 @@
 (defpackage :vivid-diff
   (:use :cl)
   (:export ;;;; MAIN API
-           "MISMATCH-SEXP"
-           "DIFF-PRINT")
+           #:mismatch-sexp
+           #:diff-print)
   (:export ;;;; For hackers to extend.
-           "DIFF" ; structure name
-           "MARKUP" ; constructor
-           "DIFF-OBJECT" ; accessor
-           "DIFF-COMPARABLE" ; structure name
-           "DIFF-COMPARABLE-ORIGIN" ; accessor
-           "NOTHING" ; structure name.
-           "MARKUP-NOTHING" ; constructor.
+           #:diff ; structure name
+           #:markup ; constructor
+           #:diff-object ; accessor
+           #:diff-comparable ; structure name
+           #:diff-comparable-origin ; accessor
+           #:nothing ; structure name.
+           #:markup-nothing ; constructor.
            ))
 
 (in-package :vivid-diff)
@@ -127,7 +127,7 @@
                                 :key (lambda (n) (format nil ":~A" n)))
               (write-char #\Space output)
               (vivid-colors:vprint-newline :miser output)
-	      (vivid-colors:vprint actual output t)
+              (vivid-colors:vprint actual output t)
               (when rest
                 (write-char #\Space output)
                 (vivid-colors:vprint-newline :linear output)))))
