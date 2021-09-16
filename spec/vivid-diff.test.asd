@@ -2,9 +2,9 @@
 (in-package :asdf)
 (defsystem "vivid-diff.test"
   :version
-  "0.1.3"
+  "0.1.4"
   :depends-on
-  (:jingoh "vivid-diff")
+  (:jingoh "vivid-diff" "cl-ppcre")
   :components
   ((:file "vivid-diff"))
   :perform

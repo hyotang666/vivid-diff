@@ -240,10 +240,14 @@
 #?(mismatch-sexp '(a b) '(a))
 :satisfies (lambda (diff)
 	     (& (typep diff '(cons (eql a) diff))
-		(equal (with-output-to-string (out) (diff-print diff out))
-		       (format nil "(A . ~A)"
-			       (let ((cl-ansi-text:*color-mode* :8bit))
-				 (cl-ansi-text:red "(B)"))))))
+		(let ((output (with-output-to-string (out) (diff-print diff out))))
+		  (& (equal "(A . (B))" (ppcre:regex-replace-all "\\x1B[^m]+m" output ""))
+		     (let ((red-escape-sequence
+			     (search (let ((cl-ansi-text:*color-mode* :8bit))
+				       (cl-ansi-text:make-color-string cl-colors2:+red+))
+				     output)))
+		       (& (< red-escape-sequence
+			     (search cl-ansi-text:+reset-color-string+ output))))))))
 
 ;; String
 #?(mismatch-sexp "a" "a") => "a"
@@ -341,17 +345,25 @@
 #?(mismatch-sexp #0A() #1A())
 :satisfies (lambda (diff)
 	     (& (typep diff 'diff)
-		(equal (with-output-to-string (out) (diff-print diff out))
-		       (let ((cl-ansi-text:*color-mode* :8bit))
-			 (cl-ansi-text:red "(:DIFFERENT-DIMENSIONS :EXPECTED (0) :ACTUAL NIL #0ANIL)")))))
+		(let ((output (with-output-to-string (out) (diff-print diff out))))
+		  (& (uiop:string-prefix-p (let ((cl-ansi-text:*color-mode* :8bit))
+					     (cl-ansi-text:make-color-string cl-colors2:+red+))
+					   output)
+		     (uiop:string-suffix-p output cl-ansi-text:+reset-color-string+)
+		     (equal "(:DIFFERENT-DIMENSIONS :EXPECTED (0) :ACTUAL NIL #0ANIL)"
+			    (ppcre:regex-replace-all "\\x1B[^m]+m" output ""))))))
 
 ; Lesser
 #?(mismatch-sexp #2A((a b)) #2A((a b) (c d)))
 :satisfies (lambda (diff)
 	     (& (typep diff 'diff)
-		(equal (with-output-to-string (out) (diff-print diff out))
-		       (let ((cl-ansi-text:*color-mode* :8bit))
-			 (cl-ansi-text:red "(:DIFFERENT-DIMENSIONS :EXPECTED (2 2) :ACTUAL (1 2) #2A((A B)))")))))
+		(let ((output (with-output-to-string (out) (diff-print diff out))))
+		  (& (uiop:string-prefix-p (let ((cl-ansi-text:*color-mode* :8bit))
+					     (cl-ansi-text:make-color-string cl-colors2:+red+))
+					   output)
+		     (uiop:string-suffix-p output cl-ansi-text:+reset-color-string+)
+		     (equal "(:DIFFERENT-DIMENSIONS :EXPECTED (2 2) :ACTUAL (1 2) #2A((A B)))"
+			    (ppcre:regex-replace-all "\\x1B[^m]+m" output ""))))))
 
 #?(mismatch-sexp #2A((a b)) #2A((a c)))
 :satisfies (lambda (diff)
