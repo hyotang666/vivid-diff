@@ -45,12 +45,13 @@
   (values))
 
 (defun vprint-diff (output diff)
-  (vivid-colors:put (diff-object diff) output :color cl-colors2:+red+)
+  (let ((vivid-colors:*color* (list cl-colors2:+red+)))
+    (vivid-colors:vprint (diff-object diff) output t))
   (values))
 
 (defmethod print-object ((object diff) output)
   (cond ((or *print-readably* *print-escape*) (call-next-method))
-        (t (vivid-colors:vprint object output))))
+        (t (diff-print object output))))
 
 (defun vprint-string-diff (output diff)
   (let* ((pos (mismatch (string-diff-origin diff) (string-diff-object diff)))
