@@ -168,6 +168,7 @@
 
 (defgeneric mismatch-sexp (actual expected)
   (:method :around (actual expected)
+    (declare (ignore actual expected))
     (let ((*env* (or *env* nil)))
       (call-next-method)))
   (:method (actual expected)
