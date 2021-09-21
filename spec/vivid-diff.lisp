@@ -165,8 +165,8 @@
 		(null (symbol-package x))
 		(equal "A" (symbol-name x))))
 
-#?(let ((expanded-form1 #0=(macroexpand-1 '(with-open-file (s "path") (read s))))
-	(expanded-form2 #0#))
+#?(let ((expanded-form1 (macroexpand-1 #0='(case 0)))
+	(expanded-form2 (macroexpand-1 #0#)))
     (values (tree-equal expanded-form1 expanded-form2)
 	    (tree-equal expanded-form1 (mismatch-sexp expanded-form1 expanded-form2))))
 :values (nil t)
