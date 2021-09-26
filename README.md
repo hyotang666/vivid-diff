@@ -63,6 +63,10 @@ MIT
 SBCL
 
 ### Tested with
+* SBCL/2.1.7
+* CCL/1.12.1
+* ECL/21.2.1
+* CLISP/2.49
 
 ## Installation
 
