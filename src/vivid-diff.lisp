@@ -17,6 +17,8 @@
 
 (in-package :vivid-diff)
 
+(declaim (optimize speed))
+
 ;;;; DIFF OBJECTS
 
 (defstruct (diff (:constructor markup (object))) object)
@@ -54,30 +56,29 @@
         (t (diff-print object output))))
 
 (defun vprint-string-diff (output diff)
-  (let* ((pos (mismatch (string-diff-origin diff) (string-diff-object diff)))
+  (let* ((string (string-diff-object diff))
+         (pos (mismatch (string-diff-origin diff) string))
          (expected-in-bounds-p
           (array-in-bounds-p (string-diff-origin diff) pos))
-         (actual-in-bounds-p (array-in-bounds-p (string-diff-object diff) pos)))
+         (actual-in-bounds-p (array-in-bounds-p string pos)))
+    (declare (type string string))
     (if expected-in-bounds-p
         (if actual-in-bounds-p
             ;; simply different. e.g. "foobar" "foohoge"
             #0=(vivid-colors:put-strings
-                 (list (subseq (string-diff-object diff) 0 pos)
-                       (list (subseq (string-diff-object diff) pos)
-                             cl-colors2:+red+
+                 (list (subseq string 0 pos)
+                       (list (subseq string pos) cl-colors2:+red+
                              :style :background))
                  output)
             ;; too much short. e.g. "foobar" "foo"
             (vivid-colors:put-strings
-              (list (string-diff-object diff)
-                    (list ":NULL" cl-colors2:+red+ :effect :blink))
+              (list string (list ":NULL" cl-colors2:+red+ :effect :blink))
               output))
         (if actual-in-bounds-p
             ;; too much long. e.g. "foo" "foobar"
             #0#
             ;; simply different e.g. "foo" "bar"
-            (vivid-colors:put (string-diff-object diff) output
-                              :color cl-colors2:+red+)))))
+            (vivid-colors:put string output :color cl-colors2:+red+)))))
 
 (defun vprint-pathname-diff (output diff)
   (let ((diff (pathname-diff-object diff)) (origin (pathname-diff-origin diff)))
@@ -208,6 +209,7 @@
                (mismatch-sexp (cdr actual) (cdr expected))))))
 
 (defmethod mismatch-sexp ((actual string) (expected string))
+  (declare (optimize (speed 1))) ; due to not simple-string.
   (if (string= actual expected)
       actual
       (markup-string actual expected)))
@@ -218,16 +220,19 @@
       (markup-pathname actual expected)))
 
 (defmethod mismatch-sexp ((actual number) (expected number))
+  (declare (optimize (speed 1))) ; due to number.
   (if (= actual expected)
       actual
       (markup actual)))
 
 (defmethod mismatch-sexp ((actual bit-vector) (expected bit-vector))
+  (declare (optimize (speed 1))) ; due to not simple-bit-vector.
   (if (equal actual expected)
       actual
       (markup actual)))
 
 (defmethod mismatch-sexp ((actual vector) (expected vector))
+  (declare (optimize (speed 1))) ; due to not simple-vector.
   (if (not
         (eq (car (uiop:ensure-list (type-of actual)))
             (car (uiop:ensure-list (type-of expected)))))
@@ -250,6 +255,7 @@
         (push (mismatch-sexp (aref actual i) (aref expected i)) acc))))
 
 (defmethod mismatch-sexp ((actual array) (expected array))
+  (declare (optimize (speed 1))) ; Due to not known array rank in compile time.
   (if (not (equal (array-dimensions expected) (array-dimensions actual)))
       (markup
         (list :different-dimensions :expected (array-dimensions expected)
