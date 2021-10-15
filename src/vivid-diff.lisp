@@ -231,11 +231,19 @@
       actual
       (markup actual)))
 
+(defun similar-vector-type-p (vec1 vec2) ; to support acl.
+  (matrix-case:matrix-typecase (vec1 vec2)
+    ((simple-vector simple-vector) t)
+    ((simple-vector vector) nil) ; ccl needs.
+    ((vector simple-vector) nil) ; ccl deeds.
+    ((vector vector)
+     (equal (second (uiop:ensure-list (type-of vec1)))
+            (second (uiop:ensure-list (type-of vec2)))))
+    (otherwise nil)))
+
 (defmethod mismatch-sexp ((actual vector) (expected vector))
   (declare (optimize (speed 1))) ; due to not simple-vector.
-  (if (not
-        (eq (car (uiop:ensure-list (type-of actual)))
-            (car (uiop:ensure-list (type-of expected)))))
+  (if (not (similar-vector-type-p actual expected))
       (markup actual)
       (do* ((i 0 (1+ i))
             (a-p (array-in-bounds-p expected i) (array-in-bounds-p expected i))

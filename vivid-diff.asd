@@ -2,12 +2,13 @@
 (in-package :asdf)
 (defsystem "vivid-diff"
   :version
-  "2.0.7"
+  "2.1.0"
   :depends-on
   (
    "vivid-colors"       ; Colored object printer.
    "cl-colors2"         ; Color object, implicitly depends on via vivid-colors.
    "closer-mop"         ; Wrapper for Meta Object Protocols.
+   "matrix-case"        ; Macro: Control flow.
    )
   :pathname
   "src/"
