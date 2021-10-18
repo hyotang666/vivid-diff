@@ -391,42 +391,42 @@
 
 ;; Standard-object
 
-#?(defclass test () ((slot :initarg :slot))) :be-the standard-class
+#?(defclass c () ((slot :initarg :slot))) :be-the standard-class
 
-#?(mismatch-sexp (make-instance 'test :slot :a) (make-instance 'test :slot :a))
+#?(mismatch-sexp (make-instance 'c :slot :a) (make-instance 'c :slot :a))
 :satisfies (lambda (result)
-	     (& (typep result 'test)
+	     (& (typep result 'c)
 		(equal :a (slot-value result 'slot))))
 
 ; Not bound.
-#?(mismatch-sexp (make-instance 'test) (make-instance 'test :slot :a))
+#?(mismatch-sexp (make-instance 'c) (make-instance 'c :slot :a))
 :satisfies (lambda (diff)
 	     (& (typep diff 'diff)
 		(equal (with-output-to-string (out) (diff-print diff out))
-		       (format nil "#<TEST :SLOT ~A>"
+		       (format nil "#<C :SLOT ~A>"
 			       (let ((cl-ansi-text:*color-mode* :8bit))
 				 (cl-ansi-text:red ":UNBOUND" :effect :blink))))))
 
 ; Should be unbound.
-#?(mismatch-sexp (make-instance 'test :slot :a) (make-instance 'test))
+#?(mismatch-sexp (make-instance 'c :slot :a) (make-instance 'c))
 :satisfies (lambda (diff)
 	     (& (typep diff 'diff)
 		(equal (with-output-to-string (out) (diff-print diff out))
-		       (format nil "#<TEST :SLOT ~A>"
+		       (format nil "#<C :SLOT ~A>"
 			       (let ((cl-ansi-text:*color-mode* :8bit))
 				 (cl-ansi-text:red ":A"))))))
 
 ; Mismatch value.
-#?(mismatch-sexp (make-instance 'test :slot :a) (make-instance 'test :slot :b))
+#?(mismatch-sexp (make-instance 'c :slot :a) (make-instance 'c :slot :b))
 :satisfies (lambda (diff)
 	     (& (typep diff 'diff)
 		(equal (with-output-to-string (out) (diff-print diff out))
-		       (format nil "#<TEST :SLOT ~A>"
+		       (format nil "#<C :SLOT ~A>"
 			       (let ((cl-ansi-text:*color-mode* :8bit))
 				 (cl-ansi-text:red ":A"))))))
 
 ;; Hash-table
-#?(mismatch-sexp (make-hash-table) (make-hash-table)) => #.(make-hash-table)
+#?(mismatch-sexp (make-hash-table) (make-hash-table)) :equivalents (make-hash-table)
 ,:test equalp
 
 ; Lesser
