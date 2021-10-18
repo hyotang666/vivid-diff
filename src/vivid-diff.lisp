@@ -275,7 +275,14 @@
                                  (row-major-aref expected i)))))))
 
 (defun slots<=obj (obj)
-  (mapcar #'c2mop:slot-definition-name (c2mop:class-slots (class-of obj))))
+  #.(or #+abcl
+        `(if (typep obj 'structure-object)
+             (loop :for slot :in (c2mop:class-slots (class-of obj))
+                   :collect (aref slot 1))
+             (mapcar #'c2mop:slot-definition-name
+                     (c2mop:class-slots (class-of obj))))
+        `(mapcar #'c2mop:slot-definition-name
+                 (c2mop:class-slots (class-of obj)))))
 
 (defmethod mismatch-sexp
            ((actual structure-object) (expected structure-object))
