@@ -67,6 +67,13 @@ SBCL
 * CCL/1.12.1
 * ECL/21.2.1
 * CLISP/2.49
+* Allegro/10.1
+* CMUCL/21D ; See below.
+* ABCL/1.8.0
+
+### Known issue
+#### CMUCL
+CMUCL pass the test of `vivid-diff` but `vivid-colors` that `vivid-diff` depends on does not support CMUCL.
 
 ## Installation
 
