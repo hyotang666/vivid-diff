@@ -6,14 +6,14 @@ Intended to be used in the test frameworks.
 
 ## Alternatives and differences.
 
-| name                  | target      | output     | patch |
-| --------------------- | ----------- | ---------- | ----- |
-| [cl-difflib]          | sequence    | unix-style | *     |
-| [clos-diff]           | clos-object | list       | *     |
-| [monkylib-prose-diff] | text-file   | html       |       |
-| [diff]                | text-file   | unix-style |       |
-| [diff-match-patch]    | sequence    | list       | *     |
-| vivid-diff            | any object  | colored    |       |
+| name                   | target      | output     | patch |
+| ---------------------- | ----------- | ---------- | ----- |
+| [cl-difflib]           | sequence    | unix-style | *     |
+| [clos-diff]            | clos-object | list       | *     |
+| [monkeylib-prose-diff] | text-file   | html       |       |
+| [diff]                 | text-file   | unix-style |       |
+| [diff-match-patch]     | sequence    | list       | *     |
+| vivid-diff             | any object  | colored    |       |
 
 [cl-difflib]: https://github.com/wiseman/cl-difflib
 [clos-diff]: https://github.com/krzysz00/clos-diff
