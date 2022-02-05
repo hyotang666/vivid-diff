@@ -209,7 +209,8 @@
                (mismatch-sexp (cdr actual) (cdr expected))))))
 
 (defmethod mismatch-sexp ((actual string) (expected string))
-  (declare (optimize (speed 1))) ; due to not simple-string.
+  #+sbcl ; due to not simple-string.
+  (declare (sb-ext:muffle-conditions sb-ext:compiler-note))
   (if (string= actual expected)
       actual
       (markup-string actual expected)))
@@ -220,13 +221,15 @@
       (markup-pathname actual expected)))
 
 (defmethod mismatch-sexp ((actual number) (expected number))
-  (declare (optimize (speed 1))) ; due to number.
+  #+sbcl ; due to number.
+  (declare (sb-ext:muffle-conditions sb-ext:compiler-note))
   (if (= actual expected)
       actual
       (markup actual)))
 
 (defmethod mismatch-sexp ((actual bit-vector) (expected bit-vector))
-  (declare (optimize (speed 1))) ; due to not simple-bit-vector.
+  #+sbcl ; due to not simple-bit-vector.
+  (declare (sb-ext:muffle-conditions sb-ext:compiler-note))
   (if (equal actual expected)
       actual
       (markup actual)))
@@ -243,7 +246,8 @@
       (otherwise nil))))
 
 (defmethod mismatch-sexp ((actual vector) (expected vector))
-  (declare (optimize (speed 1))) ; due to not simple-vector.
+  #+sbcl ; due to not simple-vector.
+  (declare (sb-ext:muffle-conditions sb-ext:compiler-note))
   (if (not (similar-vector-type-p actual expected))
       (markup actual)
       (do* ((i 0 (1+ i))
@@ -264,7 +268,8 @@
         (push (mismatch-sexp (aref actual i) (aref expected i)) acc))))
 
 (defmethod mismatch-sexp ((actual array) (expected array))
-  (declare (optimize (speed 1))) ; Due to not known array rank in compile time.
+  #+sbcl ; Due to not known array rank in compile time.
+  (declare (sb-ext:muffle-conditions sb-ext:compiler-note))
   (if (not (equal (array-dimensions expected) (array-dimensions actual)))
       (markup
         (list :different-dimensions :expected (array-dimensions expected)
