@@ -241,7 +241,7 @@
     (matrix-case:matrix-typecase (vec1 vec2)
       ((simple-vector simple-vector) t)
       ((simple-vector vector) nil) ; ccl needs.
-      ((vector simple-vector) nil) ; ccl deeds.
+      ((vector simple-vector) nil) ; ccl needs.
       ((vector vector) (equal (vector-type vec1) (vector-type vec2)))
       (otherwise nil))))
 
