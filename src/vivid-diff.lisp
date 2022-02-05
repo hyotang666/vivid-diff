@@ -232,14 +232,15 @@
       (markup actual)))
 
 (defun similar-vector-type-p (vec1 vec2) ; to support acl.
-  (matrix-case:matrix-typecase (vec1 vec2)
-    ((simple-vector simple-vector) t)
-    ((simple-vector vector) nil) ; ccl needs.
-    ((vector simple-vector) nil) ; ccl deeds.
-    ((vector vector)
-     (equal (second (uiop:ensure-list (type-of vec1)))
-            (second (uiop:ensure-list (type-of vec2)))))
-    (otherwise nil)))
+  (flet ((vector-type (vector)
+           (let ((type-specifier (type-of vector)))
+             (and (atom type-specifier) (second type-specifier)))))
+    (matrix-case:matrix-typecase (vec1 vec2)
+      ((simple-vector simple-vector) t)
+      ((simple-vector vector) nil) ; ccl needs.
+      ((vector simple-vector) nil) ; ccl deeds.
+      ((vector vector) (equal (vector-type vec1) (vector-type vec2)))
+      (otherwise nil))))
 
 (defmethod mismatch-sexp ((actual vector) (expected vector))
   (declare (optimize (speed 1))) ; due to not simple-vector.
